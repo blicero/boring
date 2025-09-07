@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-07 22:38:01 krylon>
+# Time-stamp: <2025-09-07 22:51:49 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -67,8 +67,20 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
         self.win.add(self.mbox)
 
+        # Register signal handlers
+        self.win.connect("destroy", self._quit)
+        self.tick_btn.connect("clicked", self.tick)
+
         self.win.show_all()
         self.win.visible = True
+
+    def run(self):
+        """Execute the Gtk event loop."""
+        gtk.main()
+
+    def _quit(self, *_ignore):
+        self.win.destroy()
+        gtk.main_quit()
 
     def render(self) -> None:
         """Display the Engine's counter in the UI."""
@@ -76,10 +88,15 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
         self.cnt_lbl.set_markup(lbl)
 
-    def tick(self) -> None:
+    def tick(self, *args) -> None:
         """Advance the game by one tick."""
         self.eng.tick()
         self.render()
+
+
+if __name__ == '__main__':
+    g = GUI()
+    g.run()
 
 # Local Variables: #
 # python-indent: 4 #
