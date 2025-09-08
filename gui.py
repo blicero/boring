@@ -50,47 +50,58 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.eng = Engine()
         self.last_tick: float = 0.0
         self.ticks_per_second: int = 0
+        self.active: bool = True
 
         # Create the widgets.
 
         self.win = gtk.Window()
         self.win.set_title(f"{common.AppName} {common.AppVersion}")
-        self.mbox = gtk.Box(orientation=gtk.Orientation.VERTICAL)
+        self.grid = gtk.Grid()
 
-        self.tick_box = gtk.Box(orientation=gtk.Orientation.HORIZONTAL)
         self.cnt_lbl = gtk.Label.new("")
         self.tick_btn = gtk.Button.new_with_mnemonic("_Tick")
-        self.tick_box.pack_start(self.tick_btn, False, True, 0)
-        self.tick_box.pack_start(self.cnt_lbl, False, True, 0)
 
-        self.upgrade_box = gtk.Box(orientation=gtk.Orientation.HORIZONTAL)
         self.upgrade_btn = gtk.Button.new_with_mnemonic("_Upgrade")
         self.upgrade_price_entry = gtk.Entry()
         self.upgrade_lvl_lbl = gtk.Label.new("")
         self.upgrade_price_entry.set_editable(False)
-        self.upgrade_box.pack_start(self.upgrade_btn, False, True, 0)
-        self.upgrade_box.pack_start(self.upgrade_price_entry, False, True, 0)
-        self.upgrade_box.pack_start(self.upgrade_lvl_lbl, False, True, 0)
 
-        self.auto_box = gtk.Box(orientation=gtk.Orientation.HORIZONTAL)
         self.auto_buy_btn = gtk.Button.new_with_mnemonic("_Buy auto tick")
         self.auto_price_lbl = gtk.Label.new("")
         self.auto_lvl_lbl = gtk.Label.new("")
-        self.auto_box.pack_start(self.auto_lvl_lbl, False, True, 4)
-        self.auto_box.pack_start(self.auto_price_lbl, False, True, 4)
-        self.auto_box.pack_start(self.auto_buy_btn, False, True, 4)
 
-        self.mbox.pack_start(self.tick_box, False, True, 4)
-        self.mbox.pack_start(self.upgrade_box, False, True, 4)
-        self.mbox.pack_start(self.auto_box, False, True, 4)
+        self.pause_btn = gtk.Button.new_with_mnemonic("_Pause")
+        self.reset_btn = gtk.Button.new_with_mnemonic("_Reset")
 
-        self.win.add(self.mbox)
+        # Assemble the widgets
+        row: int = 0
+
+        self.grid.attach(self.tick_btn, 0, row, 1, 1)
+        self.grid.attach(self.cnt_lbl, 1, row, 3, 1)
+        row += 1
+
+        self.grid.attach(self.upgrade_btn, 0, row, 1, 1)
+        self.grid.attach(self.upgrade_price_entry, 1, row, 3, 1)
+        self.grid.attach(self.upgrade_lvl_lbl, 5, row, 2, 1)
+
+        row += 1
+        self.grid.attach(self.auto_buy_btn, 0, row, 1, 1)
+        self.grid.attach(self.auto_price_lbl, 1, row, 3, 1)
+        self.grid.attach(self.auto_lvl_lbl, 5, row, 1, 1)
+
+        row += 1
+        self.grid.attach(self.pause_btn, 0, row, 2, 1)
+        self.grid.attach(self.reset_btn, 2, row, 2, 1)
+
+        self.win.add(self.grid)
 
         # Register signal handlers
         self.win.connect("destroy", self._quit)
         self.tick_btn.connect("clicked", self.tick)
         self.upgrade_btn.connect("clicked", self.buy_upgrade)
         self.auto_buy_btn.connect("clicked", self.buy_auto)
+        self.pause_btn.connect("clicked", self.toggle_pause)
+        self.reset_btn.connect("clicked", self.reset_handler)
         glib.timeout_add(1000, self.periodic)
 
         self.win.show_all()
