@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-07 22:33:53 krylon>
+# Time-stamp: <2025-09-08 11:13:16 krylon>
 #
 # /data/code/python/boring/engine.py
 # created on 07. 09. 2025
@@ -18,6 +18,7 @@ boring.engine
 
 
 from dataclasses import dataclass
+from typing import Final
 
 
 @dataclass(slots=True, kw_only=True)
@@ -32,6 +33,23 @@ class Engine:
         """Advance the game state by one tick."""
         self.step += 1
         self.cnt += (1 << self.lvl)
+
+    @property
+    def upgrade_price(self) -> int:
+        """Return the price to upgrade to the next level."""
+        return (1 << (10 * self.lvl))
+
+    @property
+    def can_upgrade(self) -> bool:
+        """Return True if we have sufficient points to upgrade."""
+        return self.cnt >= self.upgrade_price
+
+    def upgrade(self) -> None:
+        """Perform an upgrade to the next level, if we have sufficient points."""
+        price: Final[int] = self.upgrade_price
+        if price <= self.cnt:
+            self.cnt -= price
+            self.lvl += 1
 
 # Local Variables: #
 # python-indent: 4 #

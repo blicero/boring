@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-07 22:51:49 krylon>
+# Time-stamp: <2025-09-08 10:48:48 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -52,9 +52,15 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.win = gtk.Window()
         self.win.set_title(f"{common.AppName} {common.AppVersion}")
         self.mbox = gtk.Box(orientation=gtk.Orientation.VERTICAL)
+        self.upgrade_box = gtk.Box(orientation=gtk.Orientation.HORIZONTAL)
 
         self.cnt_lbl = gtk.Label.new("")
         self.tick_btn = gtk.Button.new_with_mnemonic("_Tick")
+        self.upgrade_btn = gtk.Button.new_with_mnemonic("_Upgrade")
+        self.upgrade_price_entry = gtk.Entry.new()
+        self.upgrade_lvl_lbl = gtk.Label.new("")
+
+        self.upgrade_price_entry.set_editable(False)
 
         self.mbox.pack_start(self.cnt_lbl,
                              False,
@@ -64,15 +70,35 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
                              False,
                              True,
                              0)
+        self.mbox.pack_start(self.upgrade_box,
+                             False,
+                             True,
+                             0)
+
+        self.upgrade_box.pack_start(self.upgrade_btn,
+                                    False,
+                                    True,
+                                    0)
+        self.upgrade_box.pack_start(self.upgrade_price_entry,
+                                    False,
+                                    True,
+                                    0)
+        self.upgrade_box.pack_start(self.upgrade_lvl_lbl,
+                                    False,
+                                    True,
+                                    0)
 
         self.win.add(self.mbox)
 
         # Register signal handlers
         self.win.connect("destroy", self._quit)
         self.tick_btn.connect("clicked", self.tick)
+        self.upgrade_btn.connect("clicked", self.buy_upgrade)
 
         self.win.show_all()
         self.win.visible = True
+
+        self.render()
 
     def run(self):
         """Execute the Gtk event loop."""
@@ -87,6 +113,14 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         lbl: str = f"""<span size="x-large">{self.eng.cnt}</span>"""
 
         self.cnt_lbl.set_markup(lbl)
+        self.upgrade_price_entry.set_text(f"{self.eng.upgrade_price}")
+        self.upgrade_btn.set_sensitive(self.eng.can_upgrade)
+        self.upgrade_lvl_lbl.set_text(f"{self.eng.lvl}")
+
+    def buy_upgrade(self, *args) -> None:
+        """Buy an upgrade."""
+        self.eng.upgrade()
+        self.render()
 
     def tick(self, *args) -> None:
         """Advance the game by one tick."""
