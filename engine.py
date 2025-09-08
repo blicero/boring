@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-08 17:05:57 krylon>
+# Time-stamp: <2025-09-08 20:07:57 krylon>
 #
 # /data/code/python/boring/engine.py
 # created on 07. 09. 2025
@@ -37,7 +37,7 @@ class Engine:
     @property
     def upgrade_price(self) -> int:
         """Return the price to upgrade to the next level."""
-        return 1 << (10 * self.lvl)
+        return 1 << (4 * self.lvl)
 
     @property
     def can_upgrade(self) -> bool:
@@ -50,6 +50,12 @@ class Engine:
         if price <= self.cnt:
             self.cnt -= price
             self.lvl += 1
+
+    def reset(self) -> None:
+        """Reset the Engine to its initial state."""
+        self.step = 0
+        self.cnt = 0
+        self.lvl = 0
 
 # Local Variables: #
 # python-indent: 4 #

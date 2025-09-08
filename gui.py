@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-08 17:43:38 krylon>
+# Time-stamp: <2025-09-08 18:29:57 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -116,6 +116,8 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
     def periodic(self) -> bool:
         """Perform periodic tasks."""
+        if not self.active:
+            return True
         try:
             now: float = time.time()
 
@@ -138,15 +140,15 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
     def render(self) -> None:
         """Display the Engine's counter in the UI."""
-        lbl: Final[str] = f"""<span size="x-large">{self.eng.cnt}</span>"""
+        lbl: Final[str] = f"""<span size="24pt">{self.eng.cnt}</span>"""
         auto_price: Final[int] = self.auto_price()
 
         self.cnt_lbl.set_markup(lbl)
         self.upgrade_price_entry.set_text(f"{self.eng.upgrade_price}")
         self.upgrade_btn.set_sensitive(self.eng.can_upgrade)
-        self.upgrade_lvl_lbl.set_text(f"{self.eng.lvl}")
-        self.auto_lvl_lbl.set_text(f"{self.ticks_per_second}/sec.")
-        self.auto_price_lbl.set_text(f"{self.auto_price()}")
+        self.upgrade_lvl_lbl.set_markup(f"<tt>{self.eng.lvl}</tt>")
+        self.auto_lvl_lbl.set_markup(f"<tt>{self.ticks_per_second}/sec.</tt>")
+        self.auto_price_lbl.set_markup(f"<tt>{self.auto_price()}</tt>")
         self.auto_buy_btn.set_sensitive(self.eng.cnt >= auto_price)
 
     def buy_upgrade(self, *_args) -> None:
@@ -165,6 +167,15 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         """Advance the game by one tick."""
         self.eng.tick()
         self.render()
+
+    def toggle_pause(self, _widget) -> None:
+        """Toggle the auto-tick."""
+        self.active = not self.active
+
+    def reset_handler(self, _widget) -> None:
+        """Reset the game to its initial state."""
+        self.eng.reset()
+        self.ticks_per_second = 0
 
 
 if __name__ == '__main__':
