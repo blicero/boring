@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-09-10 18:34:36 krylon>
+# Time-stamp: <2025-09-10 19:42:24 krylon>
 #
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -39,16 +39,18 @@
     CLOCK: [2025-09-10 Mi 17:49]--[2025-09-10 Mi 18:19] =>  0:30
     :END:
 *** TODO Reset for great price!
+    This is going to be a bit more complicated, isn't it?
 ** Components [1/1]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-*** GUI [0/0]
+*** GUI [0/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
     :END:
+**** TODO Render large numbers
 *** Engine [1/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
