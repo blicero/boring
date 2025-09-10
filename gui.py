@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-08 18:29:57 krylon>
+# Time-stamp: <2025-09-10 18:17:25 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -16,6 +16,8 @@ boring.gui
 (c) 2025 Benjamin Walkenhorst
 """
 
+import os
+import pickle
 import time
 from threading import Lock
 from typing import Final
@@ -49,7 +51,6 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.lock = Lock()
         self.eng = Engine()
         self.last_tick: float = 0.0
-        self.ticks_per_second: int = 0
         self.active: bool = True
 
         # Create the widgets.
@@ -72,6 +73,8 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
         self.pause_btn = gtk.Button.new_with_mnemonic("_Pause")
         self.reset_btn = gtk.Button.new_with_mnemonic("_Reset")
+        self.save_btn = gtk.Button.new_with_mnemonic("_Save")
+        self.load_btn = gtk.Button.new_with_mnemonic("_Load")
 
         # Assemble the widgets
         row: int = 0
@@ -93,6 +96,10 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.grid.attach(self.pause_btn, 0, row, 2, 1)
         self.grid.attach(self.reset_btn, 2, row, 2, 1)
 
+        row += 1
+        self.grid.attach(self.save_btn, 0, row, 2, 1)
+        self.grid.attach(self.load_btn, 2, row, 2, 1)
+
         self.win.add(self.grid)
 
         # Register signal handlers
@@ -102,16 +109,31 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.auto_buy_btn.connect("clicked", self.buy_auto)
         self.pause_btn.connect("clicked", self.toggle_pause)
         self.reset_btn.connect("clicked", self.reset_handler)
+        self.save_btn.connect("clicked", self.save)
+        self.load_btn.connect("clicked", self.load)
         glib.timeout_add(1000, self.periodic)
 
         self.win.show_all()
         self.win.visible = True
 
+        if os.path.isfile(common.path.state()):
+            self.load()
+
         self.render()
+
+    def save(self, _btn=None) -> None:
+        """Save the state of the game."""
+        with open(common.path.state(), "wb") as fh:
+            pickle.dump(self.eng, fh)
+
+    def load(self, _btn=None) -> None:
+        """Restore the state of the game from the save file."""
+        with open(common.path.state(), "rb") as fh:
+            self.eng = pickle.load(fh)
 
     def auto_price(self) -> int:
         """Calculate the price to buy an additional auto tick per second."""
-        price = 1 << (self.ticks_per_second + 1)
+        price = 1 << (self.eng.ticks_per_second + 1)
         return price
 
     def periodic(self) -> bool:
@@ -122,7 +144,7 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
             now: float = time.time()
 
             if now - self.last_tick > 1.0:
-                for _ in range(self.ticks_per_second):
+                for _ in range(self.eng.ticks_per_second):
                     self.eng.tick()
                 self.render()
 
@@ -135,6 +157,7 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         gtk.main()
 
     def _quit(self, *_ignore):
+        self.save()
         self.win.destroy()
         gtk.main_quit()
 
@@ -147,7 +170,7 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         self.upgrade_price_entry.set_text(f"{self.eng.upgrade_price}")
         self.upgrade_btn.set_sensitive(self.eng.can_upgrade)
         self.upgrade_lvl_lbl.set_markup(f"<tt>{self.eng.lvl}</tt>")
-        self.auto_lvl_lbl.set_markup(f"<tt>{self.ticks_per_second}/sec.</tt>")
+        self.auto_lvl_lbl.set_markup(f"<tt>{self.eng.ticks_per_second}/sec.</tt>")
         self.auto_price_lbl.set_markup(f"<tt>{self.auto_price()}</tt>")
         self.auto_buy_btn.set_sensitive(self.eng.cnt >= auto_price)
 
@@ -160,7 +183,7 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         """Buy an additional auto tick per second."""
         price: Final[int] = self.auto_price()
         self.eng.cnt -= price
-        self.ticks_per_second += 1
+        self.eng.ticks_per_second += 1
         self.render()
 
     def tick(self, *_args) -> None:
@@ -175,7 +198,70 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
     def reset_handler(self, _widget) -> None:
         """Reset the game to its initial state."""
         self.eng.reset()
-        self.ticks_per_second = 0
+
+    def ask_yes_no(self, question: str, descr: str = "") -> bool:
+        """Present a dialog asking a yes or no question, return True for yes, False for no"""
+        dlg = gtk.Dialog(
+            parent=self.win,
+            title=question,
+            modal=True,
+        )
+
+        dlg.add_buttons(
+            gtk.STOCK_NO,
+            gtk.ResponseType.NO,
+            gtk.STOCK_YES,
+            gtk.ResponseType.YES,
+        )
+
+        area = dlg.get_content_area()
+        lblq = gtk.Label(label=question)
+        area.add(lblq)
+        if descr != "":
+            lbld = gtk.Label(label=descr)
+            area.add(lbld)
+
+        dlg.show_all()
+
+        try:
+            response = dlg.run()
+            match response:
+                case gtk.ResponseType.YES:
+                    return True
+                case gtk.ResponseType.NO:
+                    return False
+                case other:
+                    msg: Final[str] = f"CANTHAPPEN: Yes-or-No-Dialog returned {other}"
+                    self.log.error(msg)
+                    self.display_msg(msg)
+                    return False
+        finally:
+            dlg.destroy()
+
+    def display_msg(self, msg: str) -> None:
+        """Display a message in a dialog."""
+        self.log.info(msg)
+
+        dlg = gtk.Dialog(
+            parent=self.win,
+            title="Attention",
+            modal=True,
+        )
+
+        dlg.add_buttons(
+            gtk.STOCK_OK,
+            gtk.ResponseType.OK,
+        )
+
+        area = dlg.get_content_area()
+        lbl = gtk.Label(label=msg)
+        area.add(lbl)
+        dlg.show_all()  # pylint: disable-msg=E1101
+
+        try:
+            dlg.run()  # pylint: disable-msg=E1101
+        finally:
+            dlg.destroy()
 
 
 if __name__ == '__main__':

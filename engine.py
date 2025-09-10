@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-08 20:07:57 krylon>
+# Time-stamp: <2025-09-10 18:13:48 krylon>
 #
 # /data/code/python/boring/engine.py
 # created on 07. 09. 2025
@@ -28,6 +28,7 @@ class Engine:
     step: int = 0
     cnt: int = 0
     lvl: int = 0
+    ticks_per_second: int = 0
 
     def tick(self) -> None:
         """Advance the game state by one tick."""
@@ -56,6 +57,7 @@ class Engine:
         self.step = 0
         self.cnt = 0
         self.lvl = 0
+        self.ticks_per_second = 0
 
 # Local Variables: #
 # python-indent: 4 #

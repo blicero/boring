@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-07 22:34:14 krylon>
+# Time-stamp: <2025-09-10 17:53:56 krylon>
 #
 # /data/code/python/boring/common.py
 # created on 07. 09. 2025
@@ -54,6 +54,10 @@ class Path:
     def window(self) -> str:
         """Return the path of the window state file"""
         return os.path.join(self.__base, f"{AppName.lower()}.win")
+
+    def state(self) -> str:
+        """Return the path of the file to save the state of the game."""
+        return os.path.join(self.__base, f"{AppName.lower()}.state")
 
     def db(self) -> str:  # pylint: disable-msg=C0103
         """Return the path to the database"""
