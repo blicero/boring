@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-10 18:17:25 krylon>
+# Time-stamp: <2025-09-10 18:29:01 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -131,11 +131,6 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
         with open(common.path.state(), "rb") as fh:
             self.eng = pickle.load(fh)
 
-    def auto_price(self) -> int:
-        """Calculate the price to buy an additional auto tick per second."""
-        price = 1 << (self.eng.ticks_per_second + 1)
-        return price
-
     def periodic(self) -> bool:
         """Perform periodic tasks."""
         if not self.active:
@@ -164,14 +159,14 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
     def render(self) -> None:
         """Display the Engine's counter in the UI."""
         lbl: Final[str] = f"""<span size="24pt">{self.eng.cnt}</span>"""
-        auto_price: Final[int] = self.auto_price()
+        auto_price: Final[int] = self.eng.auto_price
 
         self.cnt_lbl.set_markup(lbl)
         self.upgrade_price_entry.set_text(f"{self.eng.upgrade_price}")
         self.upgrade_btn.set_sensitive(self.eng.can_upgrade)
         self.upgrade_lvl_lbl.set_markup(f"<tt>{self.eng.lvl}</tt>")
         self.auto_lvl_lbl.set_markup(f"<tt>{self.eng.ticks_per_second}/sec.</tt>")
-        self.auto_price_lbl.set_markup(f"<tt>{self.auto_price()}</tt>")
+        self.auto_price_lbl.set_markup(f"<tt>{auto_price}</tt>")
         self.auto_buy_btn.set_sensitive(self.eng.cnt >= auto_price)
 
     def buy_upgrade(self, *_args) -> None:
@@ -181,9 +176,7 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
     def buy_auto(self, _arg) -> None:
         """Buy an additional auto tick per second."""
-        price: Final[int] = self.auto_price()
-        self.eng.cnt -= price
-        self.eng.ticks_per_second += 1
+        self.eng.buy_auto()
         self.render()
 
     def tick(self, *_args) -> None:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-10 18:13:48 krylon>
+# Time-stamp: <2025-09-10 18:29:15 krylon>
 #
 # /data/code/python/boring/engine.py
 # created on 07. 09. 2025
@@ -38,12 +38,27 @@ class Engine:
     @property
     def upgrade_price(self) -> int:
         """Return the price to upgrade to the next level."""
-        return 1 << (4 * self.lvl)
+        return 1 << (self.lvl + 1)
 
     @property
     def can_upgrade(self) -> bool:
         """Return True if we have sufficient points to upgrade."""
         return self.cnt >= self.upgrade_price
+
+    @property
+    def auto_price(self) -> int:
+        """Calculate the price to buy an additional auto tick per second."""
+        # price = 1 << (self.eng.ticks_per_second + 1)
+        price: int = (self.ticks_per_second + 1)**2
+        return price
+
+    def buy_auto(self) -> bool:
+        """Buy an additional auto tick per second."""
+        if self.cnt >= self.auto_price:
+            self.cnt -= self.auto_price
+            self.ticks_per_second += 1
+            return True
+        return False
 
     def upgrade(self) -> None:
         """Perform an upgrade to the next level, if we have sufficient points."""
