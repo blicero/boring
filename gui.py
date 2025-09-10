@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: <2025-09-10 18:29:01 krylon>
+# Time-stamp: <2025-09-10 19:58:42 krylon>
 #
 # /data/code/python/boring/gui.py
 # created on 07. 09. 2025
@@ -41,6 +41,9 @@ from gi.repository import \
 from gi.repository import \
     Gtk as \
     gtk  # noqa: E402,F401 # pylint: disable-msg=C0413,C0411,W0611 # type: ignore
+
+
+render_cutoff: Final[int] = 1_000_000_000
 
 
 class GUI:  # pylint: disable-msg=I1101,E1101,R0902
@@ -158,7 +161,9 @@ class GUI:  # pylint: disable-msg=I1101,E1101,R0902
 
     def render(self) -> None:
         """Display the Engine's counter in the UI."""
-        lbl: Final[str] = f"""<span size="24pt">{self.eng.cnt}</span>"""
+        lbl: Final[str] = f"""<span size="24pt">{self.eng.cnt}</span>""" \
+            if (self.eng.cnt < render_cutoff) \
+            else f"""<span size="24pt">{self.eng.cnt:.4e}</span>"""
         auto_price: Final[int] = self.eng.auto_price
 
         self.cnt_lbl.set_markup(lbl)
